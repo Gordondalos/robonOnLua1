@@ -4,7 +4,7 @@ dofile("fileInfo.lua")
 oldValue = '';
 
 file = FileConstructor:new(filename)
-message('мой файл существует '..tostring(file:fileExists()))
+message('файл существует '..tostring(file:fileExists()))
 if file:fileExists() then
     oldValue = file:readFromFile()
     message('oldValue '..oldValue)
