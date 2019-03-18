@@ -16,4 +16,4 @@ columns = {
 }
 
 -- укажите тикеры акций
-rows = { "APPL", "V", "BSX", "BABA", "BIDU", "BAC" }
+rows = { "AAPL", "V", "BSX", "BABA", "BIDU", "BAC" }
