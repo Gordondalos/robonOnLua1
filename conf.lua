@@ -6,6 +6,7 @@ titleTable = "Таблица приращений цены спроса к цене закрытия"
 tableLink = nil
 indefParam = 'OFFER'
 lastClose = 'PREVPRICE'
+filename = 'info.txt'
 
 -- укажите ширину колонок
 columns = {

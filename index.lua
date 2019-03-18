@@ -1,7 +1,26 @@
 dofile("conf.lua")
+dofile("fileInfo.lua")
+
+oldValue = '';
+
+file = FileConstructor:new(filename)
+message('мой файл существует '..tostring(file:fileExists()))
+if file:fileExists() then
+    oldValue = file:readFromFile()
+    message('oldValue '..oldValue)
+
+else
+    file:createFile()
+end
+
+--file:writeFile("Какая нибуть строка")
+--file:apendTextToFile("Добавление строки в кнонец с переносом на новую строку", true)
+
+
+
+isConnect = isConnected()
 
 function OnInit()
-    isConnect = isConnected()
     if isConnect == 1 then
         message("Подключение есть")
         drowTable()
