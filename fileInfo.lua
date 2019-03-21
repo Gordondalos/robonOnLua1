@@ -1,27 +1,27 @@
-
 FileConstructor = {}
 function FileConstructor:new(fileName)
-
-    -- СЃРІРѕР№СЃС‚РІР°
+    -- свойства
     local this = {}
     this.fileName = fileName
 
     function this:fileExists()
         local file = io.open(this.fileName, "rb")
-        if file then file:close() end
+        if file then
+            file:close()
+        end
         return file ~= nil
     end
 
     function this:createFile()
         local file = io.open(this.fileName, "w")
-        file:write("РїСЂРёРІРµС‚ СЌС‚Рѕ СЏ")
+        file:write("")
         file:close()
     end
 
---    РџСЂРѕС‡РёС‚Р°С‚СЊ СЃС‚СЂРѕРєРё РёР· С„Р°Р№Р»Р°
-    function this:readFromFile(linesOrString) -- РµСЃР»Рё РїРµСЂРµРґР°С‚СЊ false С‚Рѕ РІРµСЂРЅРµС‚ РѕР±СЉРµРєС‚ РёР· Р»РёРЅРёР№
+    --    Прочитать строки из файла
+    function this:readFromFile(linesOrString) -- если передать false то вернет объект из линий
         if not this.fileExists(this.fileName) then
-            return  false
+            return false
         end
 
         local file = io.open(this.fileName, "rb")
@@ -32,9 +32,9 @@ function FileConstructor:new(fileName)
 
         file:close()
 
-        local valueFromFile = ''
-        for k,v in pairs(lines) do
-            valueFromFile = string.len(valueFromFile) > 0 and valueFromFile..', '..v or v
+        local valueFromFile = ""
+        for k, v in pairs(lines) do
+            valueFromFile = string.len(valueFromFile) > 0 and valueFromFile .. ", " .. v or v
         end
 
         return not linesOrString and valueFromFile or lines
@@ -49,21 +49,24 @@ function FileConstructor:new(fileName)
     function this:apendTextToFile(textstring, addNewLine)
         local file = io.open(this.fileName, "a")
         if addNewLine then
-            file:write('\r'..textstring)
+            file:write("\r" .. textstring)
         else
             file:write(textstring)
         end
         file:close()
     end
 
+    function this:log(textstring, addNewLine)
+        this:apendTextToFile('\r'..textstring, addNewLine)
+    end
 
-    -- РјРµС‚РѕРґ
+    -- метод
     function this:getName()
         return self.fileName
     end
 
-    --С‡РёСЃС‚Р°СЏ РјР°РіРёСЏ!
+    --чистая магия!
     setmetatable(this, self)
-    self.__index = self;
+    self.__index = self
     return this
 end
