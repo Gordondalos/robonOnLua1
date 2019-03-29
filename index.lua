@@ -1,15 +1,31 @@
+-- подключим библиотеку json
+json = require "./vendors/json"
+
 dofile("conf.lua")
 dofile("fileInfo.lua")
 dofile("client-info.lua")
 dofile("table-maker.lua")
 
-oldValue = ""
-
-file = FileConstructor:new(filename)
-if file:fileExists() then
-    oldValue = file:readFromFile()
+-- создадим файл для логов
+oldValueLog = ""
+fileLog = FileConstructor:new(fileLogName)
+if fileLog:fileExists() then
+    oldValue = fileLog:readFromFile()
 else
-    file:createFile()
+    fileLog:createFile()
+end
+
+-- поищем файл с данными или если его нет сохраненными в момент инициализации
+oldValueInfo = ""
+oldValueInfoObj = {}
+
+fileInfo = FileConstructor:new(fileInfoName)
+if fileInfo:fileExists() then
+    oldValueInfo = fileInfo:readFromFile()
+    oldValueInfoObj = json.decode(oldValueInfo)
+else
+    fileInfo:createFile()
+    message("создаю файл")
 end
 
 -- file:log("Новый комментарий", true)
@@ -25,15 +41,14 @@ function OnInit()
         message("Подключение есть")
         start()
     else
+        --start()
         message("Подключение нет!")
-        start()
     end
 end
 
 function start()
     drowTable()
     moneyLimit = client.getManyLimitT2()
-    file:log("Лимит по деньгам = " .. moneyLimit)
 end
 
 function main()
@@ -44,21 +59,33 @@ function main()
 end
 
 function drowTable()
-    table = TableMaker:new(titleTable, columns, rows)
+    tables = TableMaker:new(titleTable, columns, rows)
     setValueTofirsColumn()
     updateValueInTable()
+    -- подготовим данные для записи, если запускается первый раз
+    mydataToconvert = {}
     -- установим цену закрытия
-    for i = 0, #rows do -- получим значение для каждой бумаги
+    for i = 1, #rows do -- получим значение для каждой бумаги
         -- обновим в таблице i-тую строку и 3-ю ячейку, полученым значением
-        table.updateTableCellValue({}, i, 3, getLastClose(rows[i]))
+        local res = getLastClose(rows[i])
+        if #oldValueInfo == 0 then
+            local val = tostring(res)
+            local key = tostring(rows[i])
+            table.insert(mydataToconvert, {[key] = val})
+        end
+
+        tables.updateTableCellValue({}, i, 3, res)
+    end
+    if #oldValueInfo == 0 then
+        local text = json.encode(mydataToconvert)
+        fileInfo.log({}, text)
     end
 end
 
+-- Формируем первый
 function setValueTofirsColumn()
-    message("len" .. tostring(#rows))
     for i = 1, #rows do
-        table.updateTableCellValue({}, i, 1, rows[i])
-        message("lerows[i]" .. tostring(rows[i]))
+        tables.updateTableCellValue({}, i, 1, rows[i])
     end
 end
 
@@ -71,12 +98,30 @@ function updateValueInTable()
         local newValue = getLastData(rows[i])
         -- обновим в таблице i-тую строку и 2-ю ячейку, полученым значением (счет ячеек начинаю с нуля)
         -- первый аргумент связан как то с установкой метаданных, без него параметры прилетают пустые
-        table.updateTableCellValue({}, i, 2, newValue)
-        local oldValue = getLastClose(rows[i]) -- тут надо бы закешировать или сохранить гдето для оптимизации
-        table.updateTableCellValue({}, i, 4, getIncrementValue(oldValue, newValue))
+        tables.updateTableCellValue({}, i, 2, newValue)
+
+        local oldValue = 0
+        if #oldValueInfo > 0 then
+            oldValue = findMyVal(rows[i], oldValueInfoObj)
+        end
+        oldValue = oldValue and oldValue or getLastClose(rows[i])
+        tables.updateTableCellValue({}, i, 4, getIncrementValue(oldValue, newValue))
         sleep(10)
     end
 end
+
+function findMyVal(key, arr)
+    for i = 1, #arr do
+        for k, value in pairs(arr[i]) do
+            if k == key then
+                return value
+            end
+        end
+    end
+end
+
+-- пример тернарного оператора
+-- s = condition and "on" or "off"
 
 function getIncrementValue(oldValue, newValue)
     return math_round(newValue - oldValue, 2)

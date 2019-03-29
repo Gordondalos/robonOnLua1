@@ -47,6 +47,7 @@ function FileConstructor:new(fileName)
     end
 
     function this:apendTextToFile(textstring, addNewLine)
+        message('textstring'..tostring(textstring))
         local file = io.open(this.fileName, "a")
         if addNewLine then
             file:write("\r" .. textstring)
@@ -57,7 +58,8 @@ function FileConstructor:new(fileName)
     end
 
     function this:log(textstring, addNewLine)
-        this:apendTextToFile('\r'..textstring, addNewLine)
+         message('textstring'..tostring(textstring))
+        this:apendTextToFile( textstring, addNewLine)
     end
 
     -- метод
